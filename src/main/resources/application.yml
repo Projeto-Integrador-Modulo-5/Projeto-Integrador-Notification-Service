@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: notification-service
+
+  # ── Kafka (Consumer) ─────────────────────────────────
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.ecommerce.*"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: com.ecommerce.notification.dto.OrderEvent
+
+  # ── Redis (cache de status) ──────────────────────────
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+  # ── Virtual Threads (Java 21) ────────────────────────
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  port: ${SERVER_PORT:8083}
+
+# ── Tópicos Kafka ────────────────────────────────────
+kafka:
+  topics:
+    order-created: ${KAFKA_TOPIC_ORDER_CREATED}
+    order-updated: ${KAFKA_TOPIC_ORDER_UPDATED}
+    order-delivered: ${KAFKA_TOPIC_ORDER_DELIVERED}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
