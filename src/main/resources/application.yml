@@ -2,8 +2,9 @@ spring:
   application:
     name: notification-service
 
+  # ── Kafka Cluster (3 brokers, 3 partições, RF=3) ────
   kafka:
-    bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:29092,localhost:29093,localhost:29094}
     consumer:
       group-id: notification-group
       auto-offset-reset: earliest
