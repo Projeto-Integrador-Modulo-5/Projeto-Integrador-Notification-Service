@@ -28,7 +28,6 @@ public class StatusEventConsumer {
     public void consume(String message) {
         try {
             OrderStatusUpdatedEvent event = objectMapper.readValue(message, OrderStatusUpdatedEvent.class);
-            log.info("Recebido order.status.updated: orderId={}, status={}", event.orderId(), event.newStatus());
 
             String notificationMessage = buildMessage(event.newStatus(), event.orderId().toString());
             String type = "ORDER_" + event.newStatus();
@@ -43,7 +42,16 @@ public class StatusEventConsumer {
 
             String destination = "/topic/notifications/" + event.userId();
             messagingTemplate.convertAndSend(destination, payload);
-            log.info("WebSocket enviado para {} → {}", destination, type);
+
+            String shortId = event.orderId().toString().substring(0, 8).toUpperCase();
+            String status = event.newStatus();
+            log.info("");
+            log.info("+---------------------------------------------------+");
+            log.info("|  KAFKA >> [order.status.updated] consumido        |");
+            log.info("|  Pedido  : #{} -- {}                    |", shortId, status);
+            log.info("|  WS >> /topic/notifications/{}...     |", event.userId().toString().substring(0, 8));
+            log.info("|  Notificacao entregue ao browser em tempo real   |");
+            log.info("+---------------------------------------------------+");
 
         } catch (Exception e) {
             log.error("Erro ao processar order.status.updated: {}", e.getMessage(), e);
@@ -53,7 +61,7 @@ public class StatusEventConsumer {
     private String buildMessage(String status, String orderId) {
         String shortId = orderId.substring(0, 8).toUpperCase();
         return switch (status) {
-            case "SHIPPED" -> "Seu pedido #" + shortId + " foi enviado! Rastreie pelo código " + status;
+            case "SHIPPED" -> "Seu pedido #" + shortId + " foi enviado! Rastreie pelo codigo " + status;
             case "DELIVERED" -> "Seu pedido #" + shortId + " foi entregue!";
             default -> "Status do seu pedido #" + shortId + " atualizado para " + status;
         };
